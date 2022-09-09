@@ -52,7 +52,7 @@
     }
 
     // food
-    function randomIntInclusive(min: number, max: number) { // min and max included 
+    function randomIntInclusive(min: number, max: number) { // min and max included
         return Math.floor(Math.random() * (max - min + 1) + min)
     }
     function randomFood() {
@@ -63,58 +63,61 @@
     }
     let food: SnakePosition = randomFood()
 
-    // die
-    let gameLoop: NodeJS.Timer
-    function die() {
-        velocity = [0, 0]
-        document.removeEventListener("keydown", onKeyDown)
-        clearInterval(gameLoop)
+    // speed
+    function pow2(n: number) { return 2 << (n-1); }
+    const BASE_TIME = 1000 // ms
+    let speed = 3
+    $: speed = speed > 0 ? speed : 1
+    $: updateTime = BASE_TIME / pow2(speed)
+
+    // game loop
+    const gameLoop = () => {
+        const nextPos = [
+            wrapPosition(snake[0][0] + velocity[0]),
+            wrapPosition(snake[0][1] + velocity[1]),
+        ]
+
+        const isMoving = velocity[0] != 0 || velocity[1] != 0
+
+        // collision detection
+        if (isMoving) {
+            for (let i = 0; i < snake.length; i++) {
+                if (nextPos[0] == snake[i][0] &&
+                    nextPos[1] == snake[i][1])
+                {
+                    document.removeEventListener("keydown", onKeyDown)
+                    return // no updates and no setTimeout
+                }
+            }
+        }
+
+        // food update
+        if (nextPos[0] == food[0] &&
+            nextPos[1] == food[1])
+        {
+            snake[snake.length] = []
+            // add a new entry at the end.
+            // Loop below will populate the position automatically.
+
+            food = randomFood()
+        }
+
+        // position update
+        for (let i = snake.length - 1; i >= 1; i--) {
+            snake[i][0] = snake[i-1][0]
+            snake[i][1] = snake[i-1][1]
+        }
+        snake[0][0] = nextPos[0]
+        snake[0][1] = nextPos[1]
+
+        // loop
+        setTimeout(gameLoop, updateTime)
     }
 
     // start the game
     onMount(() => {
         document.addEventListener("keydown", onKeyDown)
-
-        // game loop
-        gameLoop = setInterval(() => {
-            const nextPos = [
-                wrapPosition(snake[0][0] + velocity[0]),
-                wrapPosition(snake[0][1] + velocity[1]),
-            ]
-
-            const isMoving = velocity[0] != 0 || velocity[1] != 0
-
-            // collision detection
-            if (isMoving) {
-                for (let i = 0; i < snake.length; i++) {
-                    if (nextPos[0] == snake[i][0] && 
-                        nextPos[1] == snake[i][1])
-                    {
-                        die()
-                        return
-                    }
-                }
-            }
-
-            // food update
-            if (nextPos[0] == food[0] && 
-                nextPos[1] == food[1])
-            {
-                snake[snake.length] = []
-                // add a new entry at the end.
-                // Loop below will populate the position automatically.
-
-                food = randomFood()
-            }
-
-            // position update
-            for (let i = snake.length - 1; i >= 1; i--) {
-                snake[i][0] = snake[i-1][0]
-                snake[i][1] = snake[i-1][1]
-            }
-            snake[0][0] = nextPos[0]
-            snake[0][1] = nextPos[1]
-        }, 100)
+        gameLoop()
     })
 </script>
 
@@ -129,6 +132,17 @@
         `left: ${10*snakePart[0]}px; top:${10*snakePart[1]}px;`
         }></div>
     {/each}
+</div>
+
+<div>
+    <div>Head Position: {snake[0][0]}, {snake[0][1]}</div>
+    <div>Length: {snake.length}</div>
+    <div>Speed:
+        <button on:click={() => speed--}>-</button>
+        {speed}
+        <button on:click={() => speed++}>+</button>
+        (update every {updateTime} ms)
+    </div>
 </div>
 
 <style>
