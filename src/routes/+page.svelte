@@ -34,15 +34,19 @@
     // events
     const onKeyDown = (ev: KeyboardEvent) => {
         if (ev.code == "KeyD" || ev.code == "ArrowRight") {
+            if (velocity[0] < 0) return
             Go.right()
         }
-        if (ev.code == "KeyA" || ev.code == "ArrowLeft") {
+        else if (ev.code == "KeyA" || ev.code == "ArrowLeft") {
+            if (velocity[0] > 0) return
             Go.left()
         }
-        if (ev.code == "KeyW" || ev.code == "ArrowUp") {
+        else if (ev.code == "KeyW" || ev.code == "ArrowUp") {
+            if (velocity[1] > 0) return
             Go.up()
         }
-        if (ev.code == "KeyS" || ev.code == "ArrowDown") {
+        else if (ev.code == "KeyS" || ev.code == "ArrowDown") {
+            if (velocity[1] < 0) return
             Go.down()
         }
     }
