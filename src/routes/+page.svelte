@@ -8,7 +8,7 @@ import { onMount } from "svelte";
     type SnakePosition = number[] // [x, y]
     let snake: SnakePosition[] = [[50, 50], [50, 50], [50,50]]
     const MIN_POSITION = 0
-    const GAME_SIZE = 100
+    const GAME_SIZE = 20
 
     // velocity
     type SnakeVelocity = SnakePosition
@@ -34,6 +34,22 @@ import { onMount } from "svelte";
         return wrap(num, MIN_POSITION, MIN_POSITION + GAME_SIZE);
     }
 
+    // events
+    const onKeyDown = (ev: KeyboardEvent) => {
+        if (ev.code == "KeyD" || ev.code == "ArrowRight") {
+            Go.right()
+        }
+        if (ev.code == "KeyA" || ev.code == "ArrowLeft") {
+            Go.left()
+        }
+        if (ev.code == "KeyW" || ev.code == "ArrowUp") {
+            Go.up()
+        }
+        if (ev.code == "KeyS" || ev.code == "ArrowDown") {
+            Go.down()
+        }
+    }
+
     // food
     function randomIntInclusive(min: number, max: number) { // min and max included 
         return Math.floor(Math.random() * (max - min + 1) + min)
@@ -46,29 +62,38 @@ import { onMount } from "svelte";
     }
     let food: SnakePosition = randomFood()
 
+    // die
+    let gameLoop: NodeJS.Timer
+    function die() {
+        velocity = [0, 0]
+        document.removeEventListener("keydown", onKeyDown)
+        clearInterval(gameLoop)
+    }
+
     // start the game
     onMount(() => {
-        document.addEventListener("keydown", (ev) => {
-            if (ev.code == "KeyD" || ev.code == "ArrowRight") {
-                Go.right()
-            }
-            if (ev.code == "KeyA" || ev.code == "ArrowLeft") {
-                Go.left()
-            }
-            if (ev.code == "KeyW" || ev.code == "ArrowUp") {
-                Go.up()
-            }
-            if (ev.code == "KeyS" || ev.code == "ArrowDown") {
-                Go.down()
-            }
-        })
+        document.addEventListener("keydown", onKeyDown)
 
         // game loop
-        setInterval(() => {
+        gameLoop = setInterval(() => {
             const nextPos = [
                 wrapPosition(snake[0][0] + velocity[0]),
                 wrapPosition(snake[0][1] + velocity[1]),
             ]
+
+            const isMoving = velocity[0] != 0 || velocity[1] != 0
+
+            // collision detection
+            if (isMoving) {
+                for (let i = 0; i < snake.length; i++) {
+                    if (nextPos[0] == snake[i][0] && 
+                        nextPos[1] == snake[i][1])
+                    {
+                        die()
+                        return
+                    }
+                }
+            }
 
             // food update
             if (nextPos[0] == food[0] && 
@@ -92,7 +117,9 @@ import { onMount } from "svelte";
     })
 </script>
 
-<div bind:this={container} class="container">
+<div bind:this={container} class="container" style={
+`width: ${10*GAME_SIZE}px; height:${10*GAME_SIZE}px;`
+}>
     <div class="food" style={
     `left: ${10*food[0]}px; top:${10*food[1]}px;`
     }></div>
@@ -118,8 +145,11 @@ import { onMount } from "svelte";
         background: white;
         width: 10px;
         height: 10px;
+        border-radius: 50%;
+        box-shadow: 0 0 10px white;
     }
     .food {
         background: yellowgreen;
+        box-shadow: 0 0 10px yellowgreen;
     }
 </style>
