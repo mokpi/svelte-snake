@@ -121,6 +121,11 @@
     })
 </script>
 
+<div>
+    <div>Press WASD or Arrow keys to start the game.</div>
+    <div>If the game froze, a collision has happened and game over.</div>
+</div>
+
 <div class="container" style={
 `width: ${10*GAME_SIZE}px; height:${10*GAME_SIZE}px;`
 }>
@@ -136,7 +141,7 @@
 
 <div>
     <div>Head Position: {snake[0][0]}, {snake[0][1]}</div>
-    <div>Length: {snake.length}</div>
+    <div>Length (points): {snake.length}</div>
     <div>Speed:
         <button on:click={() => speed--}>-</button>
         {speed}
@@ -147,9 +152,14 @@
 
 <style>
     :global(body) {
-        background: #666;
+        background: #333;
+        color: white;
+        font-size: 1.2em;
+        line-height: 150%;
+        padding: 20px;
     }
     .container {
+        margin: 20px;
         position: relative;
         background: black;
         width: 1000px;
