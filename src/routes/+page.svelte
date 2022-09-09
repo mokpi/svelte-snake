@@ -1,8 +1,5 @@
 <script lang="ts">
-import { onMount } from "svelte";
-
-    // binds
-    let container: HTMLDivElement
+    import { onMount } from "svelte"
 
     // position
     type SnakePosition = number[] // [x, y]
@@ -117,7 +114,7 @@ import { onMount } from "svelte";
     })
 </script>
 
-<div bind:this={container} class="container" style={
+<div class="container" style={
 `width: ${10*GAME_SIZE}px; height:${10*GAME_SIZE}px;`
 }>
     <div class="food" style={
